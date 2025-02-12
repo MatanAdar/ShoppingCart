@@ -14,11 +14,8 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
-  // controller to control the input in search bar
-  TextEditingController _controller = TextEditingController();
-
   void searchItemFunction(String query) {
-    context.read<Cart>().searchItem(query);
+    context.read<Cart>().searchItem(query.trim());
   }
 
   @override
@@ -74,7 +71,6 @@ class _ShopPageState extends State<ShopPage> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: TextField(
-                              controller: _controller,
                               onChanged: (query) => searchItemFunction(query),
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
@@ -105,102 +101,132 @@ class _ShopPageState extends State<ShopPage> {
 
             // Scrollable content
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Hot Picks header
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            "Hot picks 🔥",
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            "See all",
-                            style: TextStyle(
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Hot Picks list
-                    SizedBox(
-                      height: 250,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: value.get10HighestRatedItems().length,
-                        itemBuilder: (context, index) {
-                          ShopItem product =
-                              value.get10HighestRatedItems()[index];
-                          return ItemTile(
-                            product: product,
-                          );
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Categories list
-                    SizedBox(
-                      height:
-                          value.categories.length * 285, // Height per category
-                      child: GroupedListView<String, String>(
-                        elements: value.categories,
-                        groupBy: (element) =>
-                            element[0].toUpperCase() + element.substring(1),
-                        groupSeparatorBuilder: (String groupByValue) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                          child: Text(
-                            groupByValue,
-                            style: TextStyle(
-                              color: Colors.grey[900],
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+              child: ListView(
+                children: [
+                  // Hot Picks header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "Hot picks ",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        indexedItemBuilder: (context, element, index) {
-                          final categoryItems = value
-                              .getSearchItemsShop()
-                              .where(
-                                  (product) => product.item.category == element)
-                              .toList();
-
-                          return SizedBox(
-                            height: 250,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: categoryItems.length,
-                              itemBuilder: (context, index) {
-                                final product = categoryItems[index];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: ItemTile(
-                                    product: product,
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
+                        Text(
+                          "🔥",
+                          style: TextStyle(
+                            color: Colors.red[400],
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Spacer(),
+                        Text(
+                          "See all",
+                          style: TextStyle(
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Hot Picks list
+                  SizedBox(
+                    height: 240,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: value.get10HighestRatedItems().length,
+                      itemBuilder: (context, index) {
+                        ShopItem product =
+                            value.get10HighestRatedItems()[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                          child: ItemTile(
+                            product: product,
+                            imageHeight: 80,
+                            isShopPage: true,
+                            top: 5,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Categories list
+                  GroupedListView<String, String>(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    elements: value.categories,
+                    groupBy: (element) =>
+                        element[0].toUpperCase() + element.substring(1),
+                    groupSeparatorBuilder: (String groupByValue) {
+                      // Check if category has any items
+                      final hasItems = value.getSearchItemsShop().any(
+                          (product) =>
+                              product.item.category.toUpperCase() ==
+                              groupByValue.toUpperCase());
+
+                      // Return empty widget if no items
+                      if (!hasItems) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                        child: Text(
+                          groupByValue,
+                          style: TextStyle(
+                            color: Colors.grey[900],
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    },
+                    indexedItemBuilder: (context, element, index) {
+                      final categoryItems = value
+                          .getSearchItemsShop()
+                          .where((product) => product.item.category == element)
+                          .toList();
+
+                      // Skip rendering if category has no items
+                      if (categoryItems.isEmpty) {
+                        return const SizedBox
+                            .shrink(); // Returns an empty widget
+                      }
+
+                      return SizedBox(
+                        height: 240,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: categoryItems.length,
+                          itemBuilder: (context, index) {
+                            final product = categoryItems[index];
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 6.0),
+                              child: ItemTile(
+                                product: product,
+                                imageHeight: 80,
+                                isShopPage: true,
+                                top: 5,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ],

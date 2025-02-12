@@ -4,6 +4,7 @@ import 'package:flutter_rating/flutter_rating.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_cart_v2/components/custom/custom_dec_inc_container.dart';
+import 'package:shopping_cart_v2/components/custom/custom_image.dart';
 import 'package:shopping_cart_v2/components/custom/custom_wishlist_icon.dart';
 import 'package:shopping_cart_v2/controllers/amount_to_cart_controller.dart';
 import 'package:shopping_cart_v2/models/cart.dart';
@@ -29,18 +30,6 @@ class _ItemPageState extends State<ItemPage> {
 
   final AmountToCartController amountController =
       Get.put(AmountToCartController());
-
-  Widget getImage(String path, double height) {
-    return path.startsWith('http') || path.startsWith('https')
-        ? Image.network(
-            path,
-            height: height,
-          )
-        : Image.asset(
-            path,
-            height: height,
-          );
-  }
 
   // Add item to the cart
   void addItemToCart(Item item, int addAmountToCart) {
@@ -82,8 +71,10 @@ class _ItemPageState extends State<ItemPage> {
                     color: Colors.white,
                   ),
                   alignment: Alignment.center,
-                  child: getImage(
-                      widget.product.item.imagePath[selectedIndex], 250),
+                  child: CustomImage.getImage(
+                    widget.product.item.imagePath[selectedIndex],
+                    height: 250,
+                  ),
                 ),
                 CustomWishlistIcon(
                     top: 10,
@@ -115,8 +106,9 @@ class _ItemPageState extends State<ItemPage> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child:
-                            getImage(widget.product.item.imagePath[index], 80),
+                        child: CustomImage.getImage(
+                            widget.product.item.imagePath[index],
+                            height: 80),
                       ),
                     ),
                   );
@@ -146,7 +138,7 @@ class _ItemPageState extends State<ItemPage> {
                           const SizedBox(
                             width: 10,
                           ),
-                          Text(widget.product.item.rating),
+                          Text("(${widget.product.item.rating})"),
                         ],
                       ),
 

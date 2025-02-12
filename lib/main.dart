@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => Cart()..fetchItemsData(),
+          create: (context) => Cart()..initialize(),
         ),
         ChangeNotifierProvider(
           create: (context) => Wishlist(),

@@ -6,8 +6,11 @@ import 'package:shopping_cart_v2/models/cart_item.dart';
 import 'package:shopping_cart_v2/models/item.dart';
 import 'package:http/http.dart' as http;
 import 'package:shopping_cart_v2/models/shop_item.dart';
+import 'package:shopping_cart_v2/services/api_services.dart';
 
 class Cart extends ChangeNotifier {
+  final ApiServices _apiServices = ApiServices();
+
   // Categroy List
   List<String> categories = [];
 
@@ -68,50 +71,82 @@ class Cart extends ChangeNotifier {
 
   double priceSum = 0;
 
-  Future<void> fetchItemsData() async {
+  // Future<void> fetchItemsData() async {
+  //   try {
+  //     // get the categories
+  //     final uri = Uri.parse('https://dummyjson.com/products/category-list');
+  //     final response = await http.get(uri);
+
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       data.forEach((category) => {
+  //             categories.add(category.toString()),
+  //           });
+  //     }
+  //     // get all Items
+  //     final getAllUri = Uri.parse(
+  //         "https://dummyjson.com/products?limit=0&skip=0&select=title,price,description,category,rating,images,brand,stock");
+  //     final allItemsResponse = await http.get(getAllUri);
+
+  //     if (allItemsResponse.statusCode == 200) {
+  //       final allItemsData = jsonDecode(allItemsResponse.body)["products"];
+
+  //       shopInventory = allItemsData
+  //           .map<ShopItem>(
+  //             (item) => ShopItem(
+  //               item: Item(
+  //                 name: item["title"],
+  //                 price: item["price"].toString(),
+  //                 imagePath: item["images"],
+  //                 description: item["description"],
+  //                 rating: item["rating"].toString(),
+  //                 category: item["category"],
+  //                 brand: item["brand"] ?? "Amazon",
+  //               ),
+  //               stock: item["stock"],
+  //             ),
+  //           )
+  //           .toList();
+  //     }
+
+  //     shopInventory.sort((a, b) =>
+  //         double.parse(b.item.rating).compareTo(double.parse(a.item.rating)));
+  //     searchItemsShop = shopInventory;
+  //     notifyListeners();
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
+
+  // Initialize both products and categories
+  Future<void> initialize() async {
+    await Future.wait([
+      getCategories(),
+      getProducts(),
+    ]);
+  }
+
+  Future<void> getCategories() async {
     try {
-      // get the categories
-      final uri = Uri.parse('https://dummyjson.com/products/category-list');
-      final response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        data.forEach((category) => {
-              categories.add(category.toString()),
-            });
-      }
-      // get all Items
-      final getAllUri = Uri.parse(
-          "https://dummyjson.com/products?limit=0&skip=0&select=title,price,description,category,rating,images,brand,stock");
-      final allItemsResponse = await http.get(getAllUri);
-
-      if (allItemsResponse.statusCode == 200) {
-        final allItemsData = jsonDecode(allItemsResponse.body)["products"];
-
-        shopInventory = allItemsData
-            .map<ShopItem>(
-              (item) => ShopItem(
-                item: Item(
-                  name: item["title"],
-                  price: item["price"].toString(),
-                  imagePath: item["images"],
-                  description: item["description"],
-                  rating: item["rating"].toString(),
-                  category: item["category"],
-                  brand: item["brand"] ?? "Amazon",
-                ),
-                stock: item["stock"],
-              ),
-            )
-            .toList();
-      }
-
-      shopInventory.sort((a, b) =>
-          double.parse(b.item.rating).compareTo(double.parse(a.item.rating)));
-      searchItemsShop = shopInventory;
+      categories = await _apiServices.fetchCategories();
+      print("Categories loaded: ${categories.length}");
       notifyListeners();
     } catch (e) {
-      print(e);
+      print("Error loading categories: $e");
+      categories = [];
+    }
+  }
+
+  Future<void> getProducts() async {
+    try {
+      shopInventory = await _apiServices.fetchItemsData();
+      searchItemsShop = List.from(shopInventory);
+      print("Products loaded: ${shopInventory.length}");
+      notifyListeners();
+    } catch (e) {
+      print("Error loading products: $e");
+      shopInventory = [];
+      searchItemsShop = [];
     }
   }
 
@@ -149,8 +184,8 @@ class Cart extends ChangeNotifier {
       );
 
       searchItemsShop = templist;
-      notifyListeners();
     }
+    notifyListeners();
   }
 
   void modifyItemsShopList() {

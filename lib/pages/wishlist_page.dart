@@ -32,11 +32,16 @@ class WishlistPage extends StatelessWidget {
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
+                  childAspectRatio: 0.95,
                   children: List.generate(
                     context.read<Wishlist>().wishlistCart.length,
                     (index) {
                       final wishlistItem = wishlist.wishlistCart[index];
-                      return ItemTile(product: wishlistItem);
+                      return ItemTile(
+                        product: wishlistItem,
+                        imageHeight: 70,
+                        isShopPage: false,
+                      );
                     },
                   ),
                 ),

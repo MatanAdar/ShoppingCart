@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_cart_v2/components/custom/custom_dec_inc_container.dart';
+import 'package:shopping_cart_v2/components/custom/custom_image.dart';
 import 'package:shopping_cart_v2/controllers/amount_to_cart_controller.dart';
 import 'package:shopping_cart_v2/models/cart.dart';
 import 'package:shopping_cart_v2/models/cart_item.dart';
@@ -25,18 +26,6 @@ class _CartTileState extends State<CartTile> {
         .removeItemFromCart(widget.product.item);
   }
 
-  Widget getImage(String path, {double height = 180}) {
-    return path.startsWith('http') || path.startsWith('https')
-        ? Image.network(
-            path,
-            height: height,
-          )
-        : Image.asset(
-            path,
-            height: height,
-          );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<Cart>(
@@ -54,7 +43,7 @@ class _CartTileState extends State<CartTile> {
                 // image
                 SizedBox(
                   width: 70,
-                  child: getImage(
+                  child: CustomImage.getImage(
                     widget.product.item.imagePath[0],
                     height: 60,
                   ),
@@ -76,11 +65,30 @@ class _CartTileState extends State<CartTile> {
                       SizedBox(
                         width: 10,
                       ),
-                      widget.product.item.brand != "Unknown"
-                          ? Text(widget.product.item.brand)
-                          : SizedBox(
-                              height: 40,
+
+                      //brand
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.product.item.brand,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
                             ),
+                          ),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Icon(
+                            Icons.verified,
+                            size: 14,
+                            color: Colors.blue[400],
+                          ),
+                        ],
+                      ),
+
                       SizedBox(
                         height: 10,
                       ),
